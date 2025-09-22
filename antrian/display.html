@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Display Antrian</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        font-family: "Segoe UI", sans-serif;
+        background: #f1f8f4;
+        box-sizing: border-box;
+      }
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .container {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        min-width: 1280px;
+        min-height: 720px;
+        max-width: 1920px;
+        max-height: 1080px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        position: relative;
+        background: transparent;
+      }
+      .slideshow {
+        width: 70vw;
+        left: 30px;
+        top: -px;
+        height: 100vh;
+        min-width: 900px;
+        min-height: 720px;
+        max-width: 1100px;
+        max-height: 1080px;
+        position: relative;
+        background: #fff;
+        overflow: hidden;
+        z-index: 1;
+        margin-top: 0;
+      }
+      .slideshow img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        position: absolute;
+        top: -30px;
+        left: 0;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        background: #fff;
+      }
+      .slideshow img.active {
+        opacity: 1;
+        z-index: 2;
+      }
+      .slide-video {
+        width: 250vw;
+        left: 0px;
+        top: -30px;
+        height: 100vh;
+        min-width: 900px;
+        min-height: 720px;
+        max-width: 1200px;
+        max-height: 1080px;
+        position: relative;
+        transition: opacity 1s ease-in-out;
+        background: #fff;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .slide-video.active {
+        opacity: 1;
+        z-index: 2;
+        pointer-events: auto;
+      }
+      .info-panel {
+        width: 26vw; /* dari 30vw menjadi 26vw */
+        min-width: 320px; /* dari 380px menjadi 320px */
+        max-width: 480px; /* dari 576px menjadi 480px 
+        */
+        left: 30px;
+        height: 100vh;
+        min-height: 720px;
+        max-height: 1080px;
+        background: linear-gradient(135deg, #f8fffc 60%, #e0f2f1 100%);
+        box-shadow: -4px 0 24px #388e3c22;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 32px 24px 24px 24px;
+        z-index: 2;
+        border-top-left-radius: 32px;
+        border-bottom-left-radius: 32px;
+        border-left: 2px solid #c8e6c9;
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+      }
+      .info-title {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #2e7d32;
+        margin-bottom: 18px;
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .antrian-sekarang-label {
+        text-align: center;
+        color: #388e3c;
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+        font-weight: 500;
+        letter-spacing: 1px;
+      }
+      .antrian-sekarang {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: bold;
+        color: #fff;
+        background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
+        border-radius: 14px;
+        margin-bottom: 18px;
+        padding: 18px 0 12px 0;
+        box-shadow: 0 2px 12px #388e3c22;
+        letter-spacing: 2px;
+        border: 2px solid #c8e6c9;
+      }
+      .antrian-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .antrian-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #e8f5e9;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #1b5e20;
+        box-shadow: 0 1px 4px #388e3c11;
+        min-height: 48px;
+      }
+
+	.antrian-item-nonaktif {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #cf0808;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #1b5e20;
+        box-shadow: 0 1px 4px #388e3c11;
+        min-height: 48px;
+      }
+
+      .antrian-status-dot {
+        display: outline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+      .antrian-status-dot.aktif {
+        background: #43a047;
+      }
+      .antrian-status-dot.nonaktif {
+        background: #e53935;
+      }
+      .antrian-nama {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .antrian-nomor {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2e7d32;
+        min-width: 48px;
+        text-align: right;
+      }
+      .clock-panel {
+        background: #c8e6c9;
+        border-radius: 8px;
+        padding: 14px 0;
+        text-align: center;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 4px #388e3c11;
+      }
+      .clock-time {
+        font-size: 1.7rem;
+        font-weight: bold;
+        color: #2e7d32;
+        letter-spacing: 2px;
+      }
+      .clock-date {
+        font-size: 1.2rem;
+        color: #388e3c;
+        margin-top: 6px;
+      }
+      .pengumuman-panel {
+        background: #fffde7;
+        border-radius: 8px;
+        padding: 14px 18px;
+        color: #795548;
+        font-size: 1.2rem;
+        min-height: 48px;
+        box-shadow: 0 2px 8px #ffecb322;
+        margin-top: auto;
+        margin-bottom: 0;
+      }
+      /* Popup satu layar */
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(44, 101, 54, 0.98);
+        color: white;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-size: 4vw;
+        font-weight: bold;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .marquee-panel {
+        width: 70vw;
+        min-width: 900px;
+        max-width: 1344px;
+        height: 60px;
+        background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
+        margin: 0;
+        overflow: hidden;
+        position: absolute;
+        left: 30px;
+        bottom: 17px;
+        z-index: 10;
+        box-shadow: 0 2px 8px #388e3c22;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+      .marquee-text {
+        white-space: nowrap;
+        display: inline-block;
+        color: #fff;
+        font-size: 3rem;
+        font-weight: bold;
+        padding-left: 100%;
+        animation: marquee 32s linear infinite;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #2e7d3244;
+      }
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+      @media (max-width: 1400px) {
+        .info-title {
+          font-size: 1.5rem;
+        }
+        .antrian-sekarang {
+          font-size: 2rem;
+        }
+        .antrian-nomor-loket {
+          font-size: 1.5rem;
+        }
+        .antrian-item {
+          font-size: 1rem;
+          min-height: 60px;
+        }
+        .marquee-text {
+          font-size: 1.1rem;
+        }
+      }
+      @media (max-width: 900px) {
+        .container {
+          flex-direction: column;
+          min-width: unset;
+          min-height: unset;
+          max-width: unset;
+          max-height: unset;
+        }
+        .slideshow,
+        .info-panel {
+          width: 100vw;
+          height: 50vh;
+          min-width: unset;
+          max-width: unset;
+          min-height: unset;
+          max-height: unset;
+        }
+        .info-panel {
+          padding: 10px 4px;
+          border-radius: 0;
+          height: auto;
+        }
+        .antrian-item {
+          min-height: 44px;
+          font-size: 0.98rem;
+          padding: 7px 4px 6px 8px;
+        }
+        .antrian-nomor-loket {
+          font-size: 1.3rem;
+        }
+        .info-title {
+          font-size: 1.1rem;
+          margin-bottom: 6px;
+        }
+        .antrian-sekarang {
+          font-size: 1.3rem;
+          padding: 6px 0 4px 0;
+          margin-bottom: 8px;
+        }
+        .clock-panel {
+          padding: 6px 0;
+          margin-bottom: 6px;
+        }
+        .pengumuman-panel {
+          font-size: 0.92rem;
+          padding: 7px 6px;
+          min-height: 24px;
+        }
+        .antrian-list {
+          max-height: 150px;
+          overflow-y: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="slideshow" id="slideshow">
+        <img src="slideshow/1.png" class="active" />
+        <video src="slideshow/tes.mp4" class="slide-video" muted></video>
+        <img src="slideshow/2.png" />
+        <img src="slideshow/3.png" />
+        <img src="slideshow/4.png" />
+        <img src="slideshow/5.png" />
+        <img src="slideshow/6.png" />
+        <img src="slideshow/7.png" />
+        <img src="slideshow/8.png" />
+        <img src="slideshow/9.png" />
+        <img src="slideshow/10.png" />
+        <img src="slideshow/11.png" />
+        <img src="slideshow/12.png" />
+        <img src="slideshow/13.png" />
+
+        <!-- Tambahkan gambar sesuai kebutuhan -->
+      </div>
+      <!-- Marquee diletakkan DI SINI -->
+      <div class="marquee-panel" id="marqueePanel">
+        <div class="marquee-text" id="marqueeText">
+          SELAMAT DATANG DI PENGADILAN AGAMA TANJUNGPINANG IA
+        </div>
+      </div>
+      <div class="info-panel">
+        <div class="info-title"><strong>INFORMASI ANTRIAN</strong></div>
+        <div class="antrian-sekarang-label">SEKARANG DIPANGGIL:</div>
+        <div class="antrian-sekarang" id="antrianSekarang">-</div>
+        <div class="antrian-list" id="antrianList">
+          <!-- Daftar antrian aktif per loket -->
+        </div>
+        <div class="clock-panel">
+          <div class="clock-time" id="clockTime">00:00:00</div>
+          <div class="clock-date" id="clockDate">Senin, 1 Januari 2024</div>
+        </div>
+      </div>
+    </div>
+    <div class="popup" id="popup"></div>
+    <audio id="dingdong" src="audio/dingdong.mp3" preload="auto"></audio>
+    <script type="module">
+      import { db } from "./js/firebase-config.js";
+      import {
+        ref,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+      const marqueeText = document.getElementById("marqueeText");
+      const marqueeRef = ref(db, "display/marquee");
+      onValue(marqueeRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) marqueeText.textContent = data;
+      });
+
+      // Loket yang ingin ditampilkan
+      const loketList = [
+        { kode: "H", nama: "Pojok E-Court" },
+        { kode: "G", nama: "Pelayanan Informasi" },
+        { kode: "E", nama: "Kasir" },
+        { kode: "F", nama: "Pengambilan Produk" },
+        { kode: "X", nama: "Pos Bantuan Hukum" },
+      ];
+
+      const statusLoket = {};
+      const aktifNomor = {};
+
+      // Listener status aktif/nonaktif semua loket
+      const statusRef = ref(db, "status_loket");
+      onValue(statusRef, (snapshot) => {
+        Object.assign(statusLoket, snapshot.val() || {});
+        tampilkanAntrianAktif(aktifNomor); // update tampilan jika status berubah
+      });
+
+      // Listener nomor terakhir dipanggil per loket
+      const aktifRef = ref(db, "display/aktif");
+      onValue(aktifRef, (snapshot) => {
+        Object.assign(aktifNomor, snapshot.val() || {});
+        tampilkanAntrianAktif(aktifNomor); // update tampilan jika nomor berubah
+      });
+
+      // === Antrian Aktif per Loket ===
+      const antrianListDiv = document.getElementById("antrianList");
+      function tampilkanAntrianAktif(data) {
+        antrianListDiv.innerHTML = "";
+        loketList.forEach((loket) => {
+          const nomor = data[loket.kode] || "-";
+          const aktif = statusLoket[loket.kode] !== false;
+          const dotClass = aktif ? "aktif" : "nonaktif";
+          const div = document.createElement("div");
+          div.className = "antrian-item";
+          div.innerHTML = `
+            <span class="antrian-nama">
+              <span class="antrian-status-dot ${dotClass}"></span>
+              ${loket.nama}
+            </span>
+            <span class="antrian-nomor">${nomor}</span>
+          `;
+          antrianListDiv.appendChild(div);
+        });
+      }
+
+      const antrianSekarangDiv = document.getElementById("antrianSekarang");
+      onValue(aktifRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        tampilkanAntrianAktif(data);
+        // Ambil nomor antrian yang sedang dipanggil (misal: dari display/terkini)
+        if (data.sekarang) {
+          antrianSekarangDiv.textContent = data.sekarang;
+        }
+      });
+      // Ambil nomor antrian terkini untuk "Sekarang Dipanggil"
+      const displayRef = ref(db, "display/terkini");
+      onValue(displayRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.nomor) {
+          antrianSekarangDiv.textContent = data.nomor;
+        }
+      });
+
+      // === Slideshow Otomatis ===
+      const slideElements = Array.from(
+        document.querySelectorAll(".slideshow img, .slideshow video")
+      );
+      let currentIndex = 0;
+
+      function showSlide(index) {
+        slideElements.forEach((el, i) => {
+          el.classList.toggle("active", i === index);
+          if (el.tagName === "VIDEO") {
+            el.pause();
+            el.currentTime = 0;
+          }
+        });
+
+        const currentEl = slideElements[index];
+        if (currentEl.tagName === "VIDEO") {
+          currentEl.play();
+          currentEl.onended = () => {
+            nextSlide();
+          };
+        } else {
+          setTimeout(nextSlide, 10000); // 10 detik untuk gambar
+        }
+      }
+
+      function nextSlide() {
+        // Hapus event onended agar tidak double trigger
+        const currentEl = slideElements[currentIndex];
+        if (currentEl.tagName === "VIDEO") {
+          currentEl.onended = null;
+        }
+        currentIndex = (currentIndex + 1) % slideElements.length;
+        showSlide(currentIndex);
+      }
+
+      // Mulai slideshow
+      showSlide(currentIndex);
+
+      // === Jam & Tanggal Real-time ===
+      function updateClock() {
+        const now = new Date();
+        const hari = [
+          "Minggu",
+          "Senin",
+          "Selasa",
+          "Rabu",
+          "Kamis",
+          "Jumat",
+          "Sabtu",
+        ];
+        const bulan = [
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
+        ];
+        document.getElementById("clockTime").textContent =
+          now.toLocaleTimeString("id-ID", { hour12: false });
+        document.getElementById("clockDate").textContent = `${
+          hari[now.getDay()]
+        }, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // === Pengumuman (bisa diubah dari Firebase jika mau) ===
+      const pengumumanPanel = document.getElementById("pengumumanPanel");
+      const pengumumanRef = ref(db, "display/pengumuman");
+      onValue(pengumumanRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) pengumumanPanel.textContent = data;
+      });
+
+      // === Popup Panggilan Satu Layar ===
+      const popup = document.getElementById("popup");
+      let lastShown = "";
+      let lastWaktu = "";
+      onValue(displayRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.nomor && data.waktu && data.waktu !== lastWaktu) {
+          lastWaktu = data.waktu;
+          showPopup(data.nomor);
+          playVoice(data.nomor);
+        }
+      });
+
+      function showPopup(nomor) {
+        const lokasi = getTujuanByLoket(nomor.split("-")[0]);
+        popup.textContent = `Antrian ${nomor} silakan ke ${lokasi}`;
+        popup.style.display = "flex";
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 8000);
+      }
+
+      function getTujuanByLoket(loket) {
+        switch (loket) {
+          case "H":
+            return "Pojok E-Court";
+          case "G":
+            return "Pelayanan Informasi";
+          case "E":
+            return "Kasir";
+          case "F":
+            return "Pengambilan Produk";
+          case "X":
+            return "Pos Bantuan Hukum";
+          default:
+            return "Pelayanan";
+        }
+      }
+
+      function playVoice(nomor) {
+        const huruf = nomor.split("-")[0];
+        const tujuan = getTujuanByLoket(huruf);
+        const dingdong = document.getElementById("dingdong");
+        dingdong.play();
+        setTimeout(() => {
+          const utterance = new SpeechSynthesisUtterance();
+          utterance.lang = "id-ID";
+          utterance.text = `Antrian ${formatNomor(nomor)} silakan ke ${tujuan}`;
+          window.speechSynthesis.speak(utterance);
+        }, 1500);
+      }
+
+      function formatNomor(nomor) {
+        const parts = nomor.split("-");
+        if (parts.length !== 2) return nomor;
+        const huruf = parts[0];
+        const angka = parts[1]
+          .split("")
+          .map((d) => (d === "0" ? "kosong" : d))
+          .join(" ");
+        return `${huruf} ${angka}`;
+      }
+    </script>
+  </body>
+</html>

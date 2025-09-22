@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kelola Akun Admin</title>
+    <link rel="icon" type="image/png" href="logo.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f1f8f4;
+      }
+      .admin-dashboard {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        background: linear-gradient(180deg, #2e7d32 80%, #388e3c 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        box-shadow: 2px 0 12px #0001;
+        z-index: 10;
+      }
+      .sidebar-logo {
+        font-size: 1.7rem;
+        font-weight: bold;
+        padding: 32px 0 24px 0;
+        text-align: center;
+        letter-spacing: 1px;
+        border-bottom: 1px solid #388e3c44;
+      }
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 24px;
+        padding: 0 18px;
+        flex: 1;
+      }
+      .nav-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.08rem;
+        font-weight: 500;
+        text-align: left;
+        padding: 12px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: background 0.18s, color 0.18s;
+      }
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .main-content {
+        margin-left: 250px;
+        flex: 1;
+        padding: 36px 36px 36px 36px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+      .main-header {
+        margin-bottom: 18px;
+        border-bottom: 1px solid #c8e6c9;
+        padding-bottom: 12px;
+      }
+      .main-header h1 {
+        color: #2e7d32;
+        font-size: 2rem;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .admin-akun-section {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px #0001;
+        padding: 28px 24px 24px 24px;
+        margin-bottom: 18px;
+        max-width: 600px;
+      }
+      .admin-akun-section h2 {
+        color: #388e3c;
+        font-size: 1.3rem;
+        margin-bottom: 18px;
+        font-weight: 600;
+      }
+      input,
+      select {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #c8e6c9;
+        font-size: 1rem;
+      }
+      button {
+        padding: 8px 16px;
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        transition: background 0.18s;
+      }
+      button:hover {
+        background: #388e3c;
+      }
+      .btn-danger {
+        background: #b71c1c;
+      }
+      .btn-danger:hover {
+        background: #f44336;
+      }
+      .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+      }
+      .btn-secondary:hover {
+        background: #bdbdbd;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+        font-size: 0.98rem;
+      }
+      th {
+        background-color: #c8e6c9;
+      }
+      tr:nth-child(even) {
+        background-color: #f1f8e9;
+      }
+      .aksi-btns {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+      }
+      .password-view {
+        font-family: monospace;
+        font-size: 1rem;
+        background: #f5f5f5;
+        border-radius: 4px;
+        padding: 2px 8px;
+        margin-left: 6px;
+        color: #b71c1c;
+      }
+      .edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+        background: #f9fbe7;
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          position: static;
+          width: 100vw;
+          height: 60px;
+          min-height: unset;
+          flex-direction: row;
+        }
+        .main-content {
+          margin-left: 0;
+          padding: 18px 4vw 18px 4vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-dashboard">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <span>Admin Panel</span>
+        </div>
+        <nav class="sidebar-nav">
+          <button class="nav-btn" id="navDashboard">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </button>
+          <button class="nav-btn" id="navDisplay">
+            <i class="bi bi-tv"></i> Kelola Display
+          </button>
+          <button class="nav-btn" id="navIndex">
+            <i class="bi bi-house-door"></i> Kelola Index
+          </button>
+          <button class="nav-btn active" id="navAkun">
+            <i class="bi bi-person-gear"></i> Kelola Akun
+          </button>
+          <button class="nav-btn" id="navRekap">
+            <i class="bi bi-clipboard-data"></i> Rekap Antrian
+          </button>
+          <button class="nav-btn" id="btnLogout">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </button>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <header class="main-header">
+          <h1>Kelola Akun Admin</h1>
+        </header>
+        <section class="admin-akun-section">
+          <h2>Tambah Admin Bagian</h2>
+          <input id="newUsername" type="text" placeholder="Username Admin" />
+          <input id="newNama" type="text" placeholder="Nama Lengkap" />
+          <input id="newPassword" type="text" placeholder="Password" />
+          <select id="newLoket">
+            <option value="">Pilih Loket</option>
+            <option value="H">Pojok E-Court</option>
+            <option value="G">Pelayanan Informasi</option>
+            <option value="E">Kasir</option>
+            <option value="F">Pengambilan Produk</option>
+            <option value="X">Posbakum</option>
+          </select>
+
+          <button onclick="buatAdminBagian()">Buat Admin Bagian</button>
+        </section>
+        <section class="admin-akun-section">
+          <h2>Daftar Admin Bagian</h2>
+          <div id="adminList"></div>
+        </section>
+      </main>
+    </div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        set,
+        remove,
+        get,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+      import { db } from "./js/firebase-config.js"; // Ganti path sesuai lokasi file
+
+      // Sidebar navigation logic
+      // Sidebar Navigation
+      document.getElementById("navDashboard").onclick = function () {
+        window.location.href = "admin.html";
+      };
+      document.getElementById("navDisplay").onclick = function () {
+        window.location.href = "admin-display.html";
+      };
+      document.getElementById("navIndex").onclick = function () {
+        window.location.href = "admin-index.html";
+      };
+      document.getElementById("navAkun").onclick = function () {
+        window.location.href = "admin-akun.html";
+      };
+      document.getElementById("navRekap").onclick = function () {
+        window.location.href = "rekap.html";
+      };
+      document.getElementById("btnLogout").onclick = function () {
+        localStorage.clear();
+        window.location.href = "login.html";
+      };
+
+      // Cek login dan role
+      const username = localStorage.getItem("uid");
+      const role = localStorage.getItem("role");
+      if (!username || role !== "utama") {
+        window.location.href = "login.html";
+      }
+
+      // Tambah admin bagian
+      window.buatAdminBagian = async function () {
+        const username = document.getElementById("newUsername").value.trim();
+        const nama = document.getElementById("newNama").value.trim();
+        const password = document.getElementById("newPassword").value;
+        const loket = document.getElementById("newLoket").value;
+
+        if (!username || !nama || !password || !loket) {
+          alert("Lengkapi semua data!");
+          return;
+        }
+
+        // Cek username unik
+        const snap = await get(ref(db, "admins/" + username));
+        if (snap.exists()) {
+          alert("Username sudah terdaftar!");
+          return;
+        }
+
+        await set(ref(db, `admins/${username}`), {
+          username,
+          nama,
+          password,
+          loket,
+          role: "bagian",
+        });
+        alert("Admin bagian berhasil dibuat!");
+        document.getElementById("newUsername").value = "";
+        document.getElementById("newNama").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("newLoket").value = "";
+      };
+
+      // Tampilkan daftar admin
+      function tampilkanAdminList() {
+        const adminListDiv = document.getElementById("adminList");
+        onValue(ref(db, "admins"), (snap) => {
+          const data = snap.val() || {};
+          let html = `<table>
+            <thead>
+              <tr>
+         
+                <th>Username</th>
+                <th>Nama</th>
+                <th>Loket</th>
+                <th>Password</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>`;
+          for (let uname in data) {
+            if (data[uname].role !== "bagian") continue;
+            html += `<tr>
+            
+              <td>${uname}</td>
+              <td>${data[uname].nama || ""}</td>
+              <td>${data[uname].loket || ""}</td>
+              <td>
+                <span class="password-view" id="pw-${uname}">••••••••</span>
+                <button class="btn-secondary" onclick="togglePw('${uname}')"><i class="bi bi-eye"></i></button>
+              </td>
+              <td class="aksi-btns">
+                <button onclick="showEditForm('${uname}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn-danger" onclick="hapusAdmin('${uname}')"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+            <tr id="edit-row-${uname}" style="display:none;">
+              <td colspan="6">
+                <form class="edit-form" onsubmit="return false;">
+                  <input type="text" id="editNama-${uname}" value="${
+              data[uname].nama || ""
+            }" placeholder="Nama baru" />
+                  <input type="text" id="editPassword-${uname}" value="${
+              data[uname].password || ""
+            }" placeholder="Password baru" />
+                  <select id="editLoket-${uname}">
+                    <option value="H" ${
+                      data[uname].loket === "H" ? "selected" : ""
+                    }>Pojok E-Court</option>
+                    <option value="G" ${
+                      data[uname].loket === "G" ? "selected" : ""
+                    }>Pelayanan Informasi</option>
+                    <option value="E" ${
+                      data[uname].loket === "E" ? "selected" : ""
+                    }>Kasir</option>
+                    <option value="F" ${
+                      data[uname].loket === "F" ? "selected" : ""
+                    }>Pengambilan Produk</option>
+                    <option value="D" ${
+                      data[uname].loket === "X" ? "selected" : ""
+                    }>Posbakum</option>
+                  </select>
+                  
+                  <div>
+                    <button onclick="simpanEdit('${uname}')"><i class="bi bi-save"></i> Simpan</button>
+                    <button class="btn-secondary" onclick="batalEdit('${uname}')">Batal</button>
+                  </div>
+                </form>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          adminListDiv.innerHTML = html;
+
+          // Tambahkan event listener untuk preview foto edit
+        });
+      }
+      tampilkanAdminList();
+
+      // Toggle password view
+      window.togglePw = function (uname) {
+        const pwSpan = document.getElementById("pw-" + uname);
+        if (!pwSpan) return;
+        if (pwSpan.textContent === "••••••••") {
+          get(ref(db, "admins/" + uname)).then((snap) => {
+            const pw = snap.val().password || "";
+            pwSpan.textContent = pw;
+          });
+        } else {
+          pwSpan.textContent = "••••••••";
+        }
+      };
+
+      // Hapus admin
+      window.hapusAdmin = async function (uname) {
+        if (!confirm("Yakin ingin menghapus admin ini?")) return;
+        await remove(ref(db, "admins/" + uname));
+        alert("Admin berhasil dihapus.");
+      };
+
+      // Edit admin
+      window.showEditForm = function (uname) {
+        document.getElementById("edit-row-" + uname).style.display = "";
+      };
+      window.batalEdit = function (uname) {
+        document.getElementById("edit-row-" + uname).style.display = "none";
+      };
+      window.simpanEdit = async function (uname) {
+        const nama = document.getElementById("editNama-" + uname).value;
+        const password = document.getElementById("editPassword-" + uname).value;
+        const loket = document.getElementById("editLoket-" + uname).value;
+
+        alert("Data admin berhasil diubah.");
+        document.getElementById("edit-row-" + uname).style.display = "none";
+      };
+    </script>
+  </body>
+</html>

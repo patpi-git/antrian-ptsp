@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Register Admin</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(to right, #e3f2fd, #bbdefb);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .form-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+        width: 340px;
+      }
+      h2 {
+        text-align: center;
+        color: #1976d2;
+      }
+      label,
+      select,
+      input {
+        display: block;
+        width: 100%;
+        margin-top: 15px;
+      }
+      button {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      #loket-group {
+        display: none;
+      }
+      .foto-preview {
+        display: block;
+        margin: 10px auto 0 auto;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #1976d2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-box">
+      <h2>Register Admin</h2>
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="text" id="nama" placeholder="Nama Lengkap" required />
+      <input type="password" id="password" placeholder="Password" required />
+
+      <label for="foto">Foto Profil (opsional)</label>
+      <input type="file" id="foto" accept="image/*" />
+      <img id="fotoPreview" class="foto-preview" style="display: none" />
+
+      <label for="role">Level Admin</label>
+      <select id="role" onchange="toggleLoketInput()">
+        <option value="utama">Admin Utama</option>
+        <option value="bagian">Admin Bagian</option>
+      </select>
+
+      <div id="loket-group">
+        <label for="loket">Loket yang Dilayani</label>
+        <select id="loket">
+          <option value="H">Loket H (Pojok E-Court)</option>
+          <option value="G">Loket G (Pelayanan Informasi)</option>
+          <option value="E">Loket E (Kasir)</option>
+          <option value="F">Loket F (Pengambilan Produk)</option>
+          <option value="X">Loket X (Posbakum)</option>
+        </select>
+      </div>
+
+      <button onclick="register()">Daftar</button>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        set,
+        get,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+      import {
+        getStorage,
+        ref as sRef,
+        uploadBytes,
+        getDownloadURL,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js";
+
+      import { db } from "./js/firebase-config.js"; // Ganti path sesuai lokasi file
+
+      window.toggleLoketInput = function () {
+        const role = document.getElementById("role").value;
+        const loketGroup = document.getElementById("loket-group");
+        if (role === "bagian") {
+          loketGroup.style.display = "block";
+        } else {
+          loketGroup.style.display = "none";
+        }
+      };
+
+      // Foto preview
+      document.getElementById("foto").onchange = function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (ev) {
+            document.getElementById("fotoPreview").src = ev.target.result;
+            document.getElementById("fotoPreview").style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          document.getElementById("fotoPreview").style.display = "none";
+        }
+      };
+
+      window.register = async function () {
+        const username = document.getElementById("username").value.trim();
+        const nama = document.getElementById("nama").value.trim();
+        const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value;
+        const loket = document.getElementById("loket").value;
+        const fotoFile = document.getElementById("foto").files[0];
+
+        if (!username || !nama || !password || !role) {
+          alert("Lengkapi semua data!");
+          return;
+        }
+
+        // Cek username unik
+        const snap = await get(ref(db, "admins/" + username));
+        if (snap.exists()) {
+          alert("Username sudah terdaftar!");
+          return;
+        }
+
+        let fotoUrl = "";
+        if (fotoFile) {
+          try {
+            const fotoRef = sRef(storage, `admin-foto/${username}`);
+            await uploadBytes(fotoRef, fotoFile);
+            fotoUrl = await getDownloadURL(fotoRef);
+          } catch (e) {
+            alert("Gagal upload foto profil!");
+            return;
+          }
+        }
+
+        const adminData = {
+          username,
+          nama,
+          password,
+          role,
+          foto: fotoUrl,
+        };
+        if (role === "bagian") {
+          adminData.loket = loket;
+        }
+
+        await set(ref(db, `admins/${username}`), adminData);
+
+        alert("Admin berhasil didaftarkan!");
+        window.location.href = "login.html";
+      };
+    </script>
+  </body>
+</html>

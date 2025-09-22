@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ambil Antrian</title>
+    <link rel="icon" type="image/png" href="logo.png" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        min-height: 100vh;
+        background: linear-gradient(
+          135deg,
+          #e8f5e9 0%,
+          #a5d6a7 60%,
+          #388e3c 100%
+        );
+        font-family: "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        box-sizing: border-box;
+        padding: 32px 0 32px 0;
+        position: relative;
+      }
+      body::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("bg.jpg") center/cover no-repeat;
+        opacity: 0.15;
+        z-index: 0;
+        pointer-events: none;
+      }
+      body > * {
+        position: relative;
+        z-index: 1;
+      }
+      .logo {
+        margin-top: 16px;
+        margin-bottom: 24px;
+        width: 150px;
+        height: 150px;
+        object-fit: contain;
+        border-radius: 50%;
+      }
+      .welcome {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #1b5e20;
+        font-size: 2rem;
+        font-weight: bold;
+        text-shadow: 0 2px 8px #a5d6a7cc;
+        text-align: center;
+        line-height: 1.3;
+      }
+      .subtitle {
+        color: #388e3c;
+        font-size: 1.1rem;
+        margin-bottom: 36px;
+        margin-top: 0;
+        text-align: center;
+        font-weight: 500;
+      }
+      .loket-container {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        row-gap: 30px;
+        column-gap: 60px;
+        width: 92vw; /* lebih kecil dari 100vw agar tidak mentok */
+        max-width: 1100px; /* batasi lebar maksimal */
+        margin: 12px 0 0 2vw; /* geser ke atas & ke kiri */
+        align-items: stretch;
+        justify-items: center;
+        box-sizing: border-box;
+        padding: 0;
+      }
+
+      /* Baris atas: tombol 1, 2, 3 di kolom 2, 3, 4 */
+      .loket-container > :nth-child(1) {
+        grid-row: 1;
+        grid-column: 2;
+      }
+      .loket-container > :nth-child(2) {
+        grid-row: 1;
+        grid-column: 3;
+      }
+      .loket-container > :nth-child(3) {
+        grid-row: 1;
+        grid-column: 4;
+      }
+
+      /* Baris bawah: tombol 4, 5 di kolom 2 dan 4 */
+      .loket-container > :nth-child(4) {
+        grid-row: 2;
+        grid-column: 2;
+        margin-left: 100px;
+      }
+      .loket-container > :nth-child(5) {
+        grid-row: 2;
+        grid-column: 4;
+        margin-right: 100px;
+      }
+
+      /* PERBESAR TOMBOL */
+      .loket-btn {
+        flex: 1 1 0;
+        background: rgba(255, 255, 255, 0.92);
+        color: #1b5e20;
+        border: none;
+        border-radius: 24px;
+        padding: 16px 10px 14px 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 24px #388e3c22;
+        transition: background 0.2s, transform 0.2s, color 0.2s;
+        text-align: left;
+        position: relative;
+        min-width: 160px;
+        min-height: 90px;
+        width: 100%;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin: 0;
+        outline: none;
+        touch-action: manipulation;
+        user-select: none;
+      }
+      .loket-btn:hover {
+        background: #c8e6c9;
+        color: #2e7d32;
+        transform: translateY(-2px) scale(1.03);
+      }
+      .loket-btn:active {
+        background-color: #aed581;
+        transform: scale(0.98);
+      }
+      .loket-kode {
+        font-size: 1.5rem; /* dari 2.1rem jadi 1.5rem */
+        font-weight: bold;
+        background: #388e3c;
+        color: #fff;
+        border-radius: 12px;
+        padding: 4px 10px; /* dari 6px 22px jadi 4px 10px */
+        margin-bottom: 10px; /* dari 18px jadi 10px */
+        display: inline-block;
+        box-shadow: 0 1px 4px #388e3c22;
+        align-self: flex-start;
+        margin-left: 0;
+      }
+      .loket-btn small {
+        color: #388e3c;
+        font-weight: 400;
+        font-size: 1rem;
+      }
+      #output {
+        margin-top: 38px;
+        font-size: 1.5rem;
+        color: #1b5e20;
+        font-weight: bold;
+        text-shadow: 1px 2px 8px #a5d6a7cc;
+        letter-spacing: 1px;
+        text-align: center;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .print-button {
+        background-color: #388e3c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-right: 10px;
+      }
+      .print-button:hover {
+        background-color: #2e7d32;
+      }
+      .cancel-button {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .cancel-button:hover {
+        background-color: #c62828;
+      }
+      .marquee-panel {
+        width: 100vw;
+        height: 38px;
+        background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
+        margin: 0;
+        overflow: hidden;
+        position: fixed;
+        left: 0;
+        top: 0; /* <-- dari bottom: 0; menjadi top: 0; */
+        z-index: 100;
+        box-shadow: 0 2px 8px #388e3c22;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+      .marquee-text {
+        white-space: nowrap;
+        display: inline-block;
+        color: #fff;
+        font-size: 1.08rem;
+        font-weight: bold;
+        padding-left: 100vw;
+        animation: marquee 32s linear infinite;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #2e7d3244;
+      }
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+      @media print {
+        html,
+        body {
+          background: #fff !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 58mm !important;
+          min-width: 58mm !important;
+          max-width: 58mm !important;
+          box-sizing: border-box;
+        }
+        .print-struk {
+          width: 58mm !important;
+          min-height: 20mm !important;
+          max-width: 58mm !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          border: none !important;
+          font-family: "Arial", monospace;
+          text-align: center !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          background: #fff !important;
+        }
+        .print-struk .nomor {
+          font-size: 68px;
+          font-weight: bold;
+          margin: 0 0 0mm 0;
+          letter-spacing: 2px;
+          text-align: center;
+          line-height: 1.1;
+        }
+        .print-struk .footer {
+          font-size: 10pt;
+          margin: 0;
+          text-align: left;
+          line-height: 1.2;
+        }
+        /* Sembunyikan semua selain struk */
+        body > *:not(.print-struk) {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="marquee-panel">
+      <div class="marquee-text" id="marqueeText"></div>
+    </div>
+    <img src="logo.png" alt="Logo Pengadilan Agama" class="logo" />
+    <div class="welcome">
+      SELAMAT DATANG DI PELAYANAN TERPADU SATU PINTU<br />PENGADILAN AGAMA
+      TANJUNGPINANG KELAS 1A
+    </div>
+    <div class="subtitle"><strong>SILAKAN PILIH LAYANAN LOKET YANG ANDA BUTUHKAN</strong></div>
+    <div class="loket-container">
+      <button class="loket-btn" onclick="ambilAntrian('H')">
+        <span class="loket-kode">H</span>
+        POJOK E-COURT<br />
+        <small>PEMBUATAN AKUN E-COURT</small>
+      </button>
+
+      <button class="loket-btn" onclick="ambilAntrian('E')">
+        <span class="loket-kode">E</span>
+        KASIR
+      </button>
+      <button class="loket-btn" onclick="ambilAntrian('G')">
+        <span class="loket-kode">G</span>
+        PELAYANAN INFORMASI
+        <small
+          >PENGADUAN, PENDAFTARAN SURAT KUASA, PENGAJUAN
+          GUGATAN/PERMOHONAN</small
+        >
+      </button>
+      <button class="loket-btn" onclick="ambilAntrian('F')">
+        <span class="loket-kode">F</span>
+        PENGAMBILAN PRODUK PENGADILAN:<br />
+        <small
+          >EAC/AKTE CERAI, SALINAN PUTUSAN/PENETAPAN, LEGALISIR AKTE/SALINAN</small
+        >
+      </button>
+      <button class="loket-btn" onclick="ambilAntrian('D')">
+        <span class="loket-kode">D</span>
+        POS BANTUAN HUKUM
+      </button>
+    </div>
+    <p id="output"></p>
+
+    <!-- Modal Print (tidak diubah) -->
+    <div id="printModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="btnCloseModal">&times;</span>
+        <h2 id="modalNomor" style="text-align: center"></h2>
+        <div style="text-align: center; margin-top: 20px">
+          <button class="print-button" id="btnPrint">Ambil Antrian</button>
+          <button class="cancel-button" id="btnCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./js/firebase-config.js";
+      import {
+        ref,
+        get,
+        child,
+        set,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+      const output = document.getElementById("output");
+      let isProcessing = false;
+      let currentLoket = ""; // Simpan kode loket yang ditekan
+      let isScreensaverActive = false;
+
+      async function ambilAntrian(loket) {
+        if (isScreensaverActive) return; // blokir jika screensaver aktif/baru saja ditutup
+        if (isProcessing) return;
+        isProcessing = true;
+
+        currentLoket = loket;
+        showPrintModal(); // Tampilkan modal saja, belum simpan database
+        isProcessing = false;
+      }
+
+      window.ambilAntrian = ambilAntrian;
+
+      function showPrintModal() {
+        const modal = document.getElementById("printModal");
+        const modalNomor = document.getElementById("modalNomor");
+        modalNomor.textContent = `Sedang menyiapkan nomor antrian...`;
+        modal.style.display = "flex";
+
+        document.getElementById("btnPrint").onclick = async function () {
+          try {
+            const dbRef = ref(db);
+            const loketPath = `antrian/loket${currentLoket}`;
+            const snapshot = await get(child(dbRef, loketPath));
+            const data = snapshot.exists() ? snapshot.val() : {};
+            const jumlah = Object.keys(data).length + 1;
+            const nomorAntrian = `${currentLoket}-${String(jumlah).padStart(
+              3,
+              "0"
+            )}`;
+
+            // Simpan ke database saat tombol Print ditekan
+            await set(ref(db, `${loketPath}/${nomorAntrian}`), {
+              waktu: new Date().toISOString(),
+              status: "menunggu",
+            });
+
+            // Logbook harian dan bulanan
+            const now = new Date();
+            const tanggal = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+            const bulan = tanggal.slice(0, 7); // "YYYY-MM"
+            const logbookRef = ref(
+              db,
+              `logbook/${tanggal}/${currentLoket}/${nomorAntrian}`
+            );
+            const logbookBulanRef = ref(
+              db,
+              `logbook_bulan/${bulan}/${currentLoket}/${nomorAntrian}`
+            );
+
+            const logData = {
+              nomor: nomorAntrian,
+              waktu: now.toISOString(),
+              loket: currentLoket,
+              // tambahkan data lain jika perlu
+            };
+
+            await set(logbookRef, logData);
+            await set(logbookBulanRef, logData);
+
+            // Tampilkan konten cetak
+            modal.style.display = "none";
+            output.textContent = `Nomor antrian Anda: ${nomorAntrian}`;
+            setTimeout(() => {
+              output.textContent = "";
+            }, 5000);
+
+            // Ambil nama loket dari objek
+            const namaLoket = {
+              H: "Pojok E-Court",
+              G: "Pelayanan Informasi",
+              E: "Kasir",
+              F: "Pengambilan Produk",
+              X: "Pos Bantuan Hukum",
+            };
+
+            const printContent = `<div class="print-struk">
+  <div style="font-size:22pt;font-weight:bold;text-align:center;margin-bottom:8px;">
+    ${namaLoket[currentLoket]}
+  </div>
+  <div class="nomor" style="text-align:center;">${nomorAntrian}</div>
+  <div class="footer" style="font-size:16pt;text-align:center;margin-top:12px;">
+    ${now.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })}
+  </div>
+  <div style="font-size:18pt;text-align:center;margin-top:4px;">
+    ${now.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })}
+  </div>
+</div>
+`;
+
+            const originalBody = document.body.innerHTML;
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalBody;
+            window.location.reload();
+          } catch (error) {
+            alert("Gagal menyimpan antrian: " + error.message);
+            console.error(error);
+          }
+        };
+
+        document.getElementById("btnCancel").onclick = function () {
+          modal.style.display = "none";
+        };
+
+        document.getElementById("btnCloseModal").onclick = function () {
+          modal.style.display = "none";
+        };
+      }
+    </script>
+
+    <!-- === admin.html: Pastikan loketList pakai 'E' === -->
+    <script type="module">
+      const loketList = ["H", "G", "E", "F", "X"];
+      const namaLoket = {
+        H: "Pojok E-Court",
+        G: "Pelayanan Informasi",
+        E: "Kasir",
+        F: "Pengambilan Produk",
+        X: "Pos Bantuan Hukum",
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.3.0/tsparticles.bundle.min.js"></script>
+    <script type="module">
+      import { db } from "./js/firebase-config.js";
+      import {
+        ref,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+      const marqueeText = document.getElementById("marqueeText");
+      onValue(ref(db, "pengaturan/marquee"), (snap) => {
+        marqueeText.textContent = snap.exists() ? snap.val() : "";
+      });
+    </script>
+  </body>
+</html>

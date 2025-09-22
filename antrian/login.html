@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login Admin</title>
+    <link rel="icon" type="image/png" href="logo.png" />
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #e8f5e9 0%,
+          #a5d6a7 60%,
+          #388e3c 100%
+        );
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .form-box {
+        background: #fff;
+        padding: 36px 32px 32px 32px;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px #388e3c22;
+        width: 340px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .form-box img {
+        width: 70px;
+        margin-bottom: 18px;
+        border-radius: 50%;
+        border: 3px solid #388e3c;
+        background: #fff;
+        box-shadow: 0 2px 8px #388e3c22;
+      }
+      h2 {
+        text-align: center;
+        color: #2e7d32;
+        margin-bottom: 18px;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #a5d6a7;
+        font-size: 1rem;
+        background: #f1f8f4;
+        color: #1b5e20;
+      }
+      button {
+        margin-top: 24px;
+        width: 100%;
+        padding: 12px;
+        background-color: #43a047;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 8px #388e3c22;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background-color: #388e3c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-box">
+      <img src="logo.png" alt="Logo" />
+      <h2>Login Admin</h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="login()">Masuk</button>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        get,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+      import { db } from "./js/firebase-config.js"; // Ganti path sesuai lokasi file
+
+      window.login = async function () {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!username || !password) {
+          alert("Isi username dan password!");
+          return;
+        }
+
+        const snap = await get(ref(db, "admins/" + username));
+        if (!snap.exists()) {
+          alert("Username tidak ditemukan!");
+          return;
+        }
+        const data = snap.val();
+        if (data.password !== password) {
+          alert("Password salah!");
+          return;
+        }
+
+        // Simpan data login ke localStorage
+        localStorage.setItem("uid", username);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("nama", data.nama || "");
+        localStorage.setItem("foto", data.foto || "");
+        if (data.role === "bagian" && data.loket) {
+          localStorage.setItem("loket", data.loket);
+        }
+
+        // Arahkan ke halaman sesuai role
+        if (data.role === "utama") {
+          window.location.href = "admin.html";
+        } else if (data.role === "bagian") {
+          window.location.href = "admin-bagian.html";
+        } else {
+          alert("Hak akses tidak dikenali.");
+        }
+      };
+    </script>
+  </body>
+</html>
